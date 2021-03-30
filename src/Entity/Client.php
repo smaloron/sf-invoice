@@ -6,12 +6,13 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=ClientRepository::class)
  * @ORM\Table (name="clients")
  */
-class Client
+class Client implements  UserInterface
 {
     /**
      * @ORM\Id
@@ -26,13 +27,19 @@ class Client
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=10)
+     * @ORM\Column(type="string", length=10, unique=true)
      */
     private $reference;
 
     /**
+     * @ORM\Column (type="string", name="client_password")
+     * @var string|null
+     */
+    private ?string $password;
+
+    /**
      * @ORM\OneToOne(targetEntity=Address::class, inversedBy="client", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $address;
 
@@ -113,6 +120,39 @@ class Client
                 $invoice->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+
+    public function getRoles()
+    {
+        return ["ROLE_CLIENT"];
+    }
+
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    public function getSalt()
+    {
+        return null;
+    }
+
+    public function getUsername()
+    {
+        return $this->reference;
+    }
+
+    public function eraseCredentials()
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
 
         return $this;
     }
